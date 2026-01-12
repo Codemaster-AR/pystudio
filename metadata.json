@@ -1,0 +1,8 @@
+{
+  "name": "PyStudio AI",
+  "description": "Professional Python IDE powered by WASM and Gemini AI.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
