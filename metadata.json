@@ -1,5 +1,5 @@
 {
-  "name": "PyStudio AI",
+  "name": "PyStudio Pro",
   "description": "Professional Python IDE powered by WASM and Gemini AI.",
   "requestFramePermissions": [
     "camera",

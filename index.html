@@ -4,65 +4,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PyStudio Pro - Hyper-Terminal IDE</title>
+    <title>PyStudio Pro - Advanced WASM IDE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
     <style>
-        :root { --term-bg: #050505; --term-glow: rgba(96, 165, 250, 0.15); }
-        body { font-family: 'Inter', sans-serif; background-color: #020617; }
+        :root { 
+            --bg-main: #0d1117;
+            --bg-side: #010409;
+            --bg-activity: #0d1117;
+            --border: #30363d;
+            --accent: #2f81f7;
+            --text-muted: #8b949e;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: #c9d1d9; }
         .fira-code { font-family: 'Fira Code', monospace; }
         
-        /* Advanced Editor Layout */
-        #editor-container { position: relative; }
+        /* Pixel-Perfect Editor Alignment Fix */
+        #editor-container { position: relative; flex: 1; overflow: hidden; background: #0d1117; }
+        
+        #editor-textarea, #editor-highlight {
+            font-family: 'Fira Code', monospace !important;
+            font-size: 14px !important;
+            line-height: 22px !important; /* Fixed line height for sync */
+            padding: 20px !important;
+            margin: 0 !important;
+            border: none !important;
+            width: 100% !important;
+            height: 100% !important;
+            white-space: pre !important; /* Prevent wrapping for better sync */
+            word-wrap: normal !important;
+            tab-size: 4;
+            position: absolute;
+            top: 0;
+            left: 0;
+            box-sizing: border-box !important;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            letter-spacing: normal !important;
+        }
+
         #editor-textarea {
-            background: transparent; color: transparent; caret-color: #60a5fa;
-            z-index: 10; resize: none; line-height: 1.5rem; font-size: 14px;
+            background: transparent !important;
+            color: transparent !important;
+            caret-color: #58a6ff !important;
+            z-index: 10;
+            resize: none;
+            outline: none;
+            overflow: auto;
         }
+
         #editor-highlight {
-            position: absolute; top: 0; left: 0; pointer-events: none;
-            white-space: pre-wrap; word-wrap: break-word; line-height: 1.5rem; font-size: 14px;
-        }
-        pre[class*="language-"] { margin: 0; padding: 1rem; background: transparent !important; }
-
-        /* Hyper-Terminal Styles */
-        #terminal-output {
-            background-color: var(--term-bg);
+            z-index: 5;
+            pointer-events: none;
+            overflow: hidden;
             color: #d1d5db;
-            text-shadow: 0 0 2px rgba(255,255,255,0.05);
         }
-        .terminal-scroll::-webkit-scrollbar { width: 4px; }
-        .terminal-scroll::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
-        
-        .ansi-bold { font-weight: 700; }
-        .ansi-italic { font-style: italic; }
-        .ansi-underline { text-decoration: underline; }
-        
-        /* Rich Output Styles */
-        .rich-output table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 12px; }
-        .rich-output th, .rich-output td { border: 1px solid #334155; padding: 8px; text-align: left; }
-        .rich-output th { background: #111827; color: #60a5fa; text-transform: uppercase; font-size: 10px; }
-        .rich-output img { max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #334155; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5); }
-        
-        /* Interactive Widgets */
-        .py-widget-btn {
-            background: #2563eb; color: white; padding: 4px 12px; border-radius: 4px;
-            font-size: 11px; font-weight: bold; transition: all 0.2s;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .py-widget-btn:hover { background: #3b82f6; transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2); }
-        .py-widget-btn:active { transform: translateY(0); }
 
-        /* ASCII Art Optimized Container */
-        .ascii-art {
-            line-height: 1.1;
-            letter-spacing: 0;
-            white-space: pre;
-            display: inline-block;
+        pre[class*="language-"] { margin: 0; padding: 0 !important; background: transparent !important; }
+        code[class*="language-"] { font-family: inherit !important; background: transparent !important; }
+
+        /* Activity Bar */
+        .activity-btn {
+            width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted); cursor: pointer; transition: all 0.2s; border-left: 2px solid transparent;
         }
+        .activity-btn:hover { color: #fff; }
+        .activity-btn.active { color: #fff; border-left-color: var(--accent); background: rgba(255,255,255,0.03); }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: #484f58; }
+
+        /* Rich Table Styles */
+        .dataframe { border: 1px solid var(--border); font-size: 12px; width: 100%; }
+        .dataframe th { background: #161b22; padding: 8px; text-align: left; }
+        .dataframe td { border: 1px solid var(--border); padding: 6px; }
+
+        .loading-shimmer {
+            background: linear-gradient(90deg, #161b22 25%, #21262d 50%, #161b22 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     </style>
     <script type="importmap">
     {
@@ -72,155 +101,164 @@
     }
     </script>
 </head>
-<body class="text-slate-200 h-screen flex flex-col overflow-hidden">
+<body class="h-screen flex flex-col overflow-hidden">
 
     <!-- Loading Overlay -->
-    <div id="loading-overlay" class="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center transition-opacity duration-500">
-        <div class="relative scale-110">
-            <div class="w-24 h-24 border-4 border-blue-500/10 border-t-blue-500 rounded-full animate-spin"></div>
-            <div class="absolute inset-0 flex items-center justify-center text-blue-500 font-black text-xl tracking-tighter">PY</div>
+    <div id="loading-overlay" class="fixed inset-0 z-[100] bg-[#0d1117] flex flex-col items-center justify-center transition-opacity duration-700">
+        <div class="w-16 h-16 mb-6">
+            <svg class="animate-spin text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
         </div>
-        <h2 class="mt-8 text-2xl font-black text-white tracking-tight">PyStudio <span class="text-blue-500 underline decoration-blue-500/30">PRO</span></h2>
-        <p id="loading-status" class="mt-3 text-slate-500 text-xs font-medium uppercase tracking-[0.2em] fira-code">Syncing WASM Kernel...</p>
+        <h1 class="text-lg font-bold tracking-tight text-white mb-2">PyStudio <span class="text-blue-500">PRO</span></h1>
+        <p id="loading-status" class="text-xs text-slate-500 font-medium uppercase tracking-widest animate-pulse">Initializing WASM 3.12 Core...</p>
     </div>
 
-    <!-- Header -->
-    <header class="h-14 border-b border-slate-800 flex items-center justify-between px-6 bg-slate-950 z-20">
-        <div class="flex items-center space-x-4">
-            <div class="flex items-center space-x-2">
-                <div class="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg shadow-blue-900/40">
-                    <span class="text-white font-black text-sm">P</span>
-                </div>
-                <h1 class="text-base font-bold tracking-tight text-slate-100">HyperStudio</h1>
-            </div>
-            <nav class="flex items-center space-x-1 pl-4 border-l border-slate-800">
-                <button class="px-3 py-1 text-xs font-semibold text-slate-400 hover:text-white rounded-md transition-colors">File</button>
-                <button class="px-3 py-1 text-xs font-semibold text-slate-400 hover:text-white rounded-md transition-colors">Edit</button>
-                <button class="px-3 py-1 text-xs font-semibold text-slate-400 hover:text-white rounded-md transition-colors">Packages</button>
-            </nav>
+    <!-- Top Navigation (Breadcrumbs) -->
+    <nav class="h-9 bg-[#161b22] border-b border-[#30363d] flex items-center px-4 justify-between z-30">
+        <div class="flex items-center space-x-2 text-xs text-slate-400">
+            <span class="hover:text-white cursor-pointer transition-colors">Workspace</span>
+            <span>/</span>
+            <span class="hover:text-white cursor-pointer transition-colors">src</span>
+            <span>/</span>
+            <span class="text-slate-100 font-semibold flex items-center">
+                <svg class="w-3.5 h-3.5 mr-1.5 text-blue-400" fill="currentColor" viewBox="0 0 24 24"><path d="M14.25 0L12 3.75 9.75 0h4.5zM2.25 0h4.5L9 3.75 6.75 7.5H2.25l2.25-3.75L2.25 0zm15 0h4.5l-2.25 3.75L21.75 7.5h-4.5L15 3.75 17.25 0zM12 24l2.25-3.75L12 16.5l-2.25 3.75L12 24zM2.25 24h4.5L9 20.25l-2.25-3.75H2.25l2.25 3.75L2.25 24zm15 0h4.5l-2.25-3.75 2.25-3.75h-4.5l-2.25 3.75L17.25 24z"/></svg>
+                main.py
+            </span>
         </div>
-        <div class="flex items-center space-x-3">
-            <div class="hidden md:flex items-center space-x-2 px-3 py-1 bg-slate-900/50 border border-slate-800 rounded-full mr-2">
-                <div class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">WASM 3.12 Loaded</span>
-            </div>
-            <button id="clear-btn" class="text-xs font-bold text-slate-500 hover:text-white px-3 transition-colors">Clear</button>
-            <button id="run-btn" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-lg text-xs font-black flex items-center space-x-2 transition-all active:scale-95 shadow-xl shadow-blue-900/20">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
-                </svg>
-                <span>EXECUTE</span>
+        <div class="flex items-center space-x-4">
+            <button id="run-btn" class="flex items-center space-x-1.5 px-3 py-1 bg-[#238636] hover:bg-[#2ea043] rounded text-[11px] font-bold text-white transition-all shadow-lg active:scale-95">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg>
+                <span>Run</span>
             </button>
         </div>
-    </header>
+    </nav>
 
     <div class="flex-1 flex overflow-hidden">
-        <!-- Main Workspace -->
-        <main class="flex-1 flex overflow-hidden">
-            <!-- Left: Editor -->
-            <div class="flex-1 flex flex-col border-r border-slate-800 bg-[#020617]">
-                <div class="h-8 flex items-center px-4 bg-slate-950 border-b border-slate-900 justify-between">
-                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center">
-                        <svg class="w-3 h-3 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
-                        Main.py
-                    </span>
+        <!-- Activity Bar -->
+        <aside class="w-12 bg-[#0d1117] border-r border-[#30363d] flex flex-col items-center py-4 space-y-4">
+            <div class="activity-btn active" title="Explorer">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+            </div>
+            <div class="activity-btn" id="ai-toggle" title="AI Copilot">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </div>
+            <div class="activity-btn" title="Extensions">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+            </div>
+        </aside>
+
+        <!-- Sidebar (Explorer / AI) -->
+        <aside id="sidebar" class="w-64 bg-[#010409] border-r border-[#30363d] flex flex-col">
+            <div class="p-3 uppercase text-[10px] font-bold text-slate-500 tracking-widest border-b border-[#30363d] flex justify-between items-center">
+                <span>Explorer</span>
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="flex-1 overflow-y-auto p-2">
+                <div class="flex items-center space-x-2 p-1.5 rounded hover:bg-[#161b22] text-xs cursor-pointer text-slate-300">
+                    <svg class="w-3 h-3 text-slate-500" fill="currentColor" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+                    <span class="font-bold">PROJECT_WASM</span>
                 </div>
-                <div id="editor-container" class="flex-1 overflow-auto relative">
-                    <pre id="editor-highlight" class="language-python"><code></code></pre>
-                    <textarea id="editor-textarea" class="absolute top-0 left-0 w-full h-full p-4 outline-none fira-code font-medium" spellcheck="false"># 🌈 Hyper-Terminal Demo: TrueColor + ASCII + Buttons
-import sys
-import time
+                <div class="pl-6 space-y-1 mt-1">
+                    <div class="flex items-center space-x-2 p-1 px-2 rounded bg-[#21262d] text-xs cursor-pointer text-white">
+                        <svg class="w-3 h-3 text-blue-400" fill="currentColor" viewBox="0 0 24 24"><path d="M14.25 0L12 3.75 9.75 0h4.5zM2.25 0h4.5L9 3.75 6.75 7.5H2.25l2.25-3.75L2.25 0zm15 0h4.5l-2.25 3.75L21.75 7.5h-4.5L15 3.75 17.25 0z"/></svg>
+                        <span>main.py</span>
+                    </div>
+                    <div class="flex items-center space-x-2 p-1 px-2 rounded hover:bg-[#161b22] text-xs cursor-pointer text-slate-400">
+                        <svg class="w-3 h-3 text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M6 2a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6H6z"/></svg>
+                        <span>requirements.txt</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Editor & Panels -->
+        <div class="flex-1 flex flex-col min-w-0">
+            <!-- Tabs -->
+            <div class="h-9 bg-[#0d1117] flex border-b border-[#30363d]">
+                <div class="px-4 flex items-center bg-[#0d1117] border-r border-[#30363d] border-t-2 border-t-[#f78166] text-xs text-white">
+                    <svg class="w-3 h-3 mr-2 text-blue-400" fill="currentColor" viewBox="0 0 24 24"><path d="M14.25 0L12 3.75 9.75 0h4.5zM2.25 0h4.5L9 3.75 6.75 7.5H2.25l2.25-3.75L2.25 0zm15 0h4.5l-2.25 3.75L21.75 7.5h-4.5L15 3.75 17.25 0z"/></svg>
+                    main.py
+                    <svg class="w-3 h-3 ml-4 text-slate-500 hover:text-white cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
+                </div>
+            </div>
+
+            <!-- Editor Core -->
+            <div id="editor-container">
+                <pre id="editor-highlight" class="language-python"><code></code></pre>
+                <textarea id="editor-textarea" spellcheck="false" wrap="off"># 🚀 Welcome to PyStudio Pro
+import sys, os, time
 import pandas as pd
+import numpy as np
 
-print("--- Initializing Hyper-Terminal Rendering ---")
+# PyStudio Pro supports advanced data manipulation
+print(f"Environment: {sys.version.split()[0]} (WASM Kernel)")
+print(f"Current Path: {os.getcwd()}")
 
-# 1. TrueColor Rainbow Effect (Standard ANSI 24-bit)
-def rainbow_text(text):
-    for i, char in enumerate(text):
-        r = int(127 + 127 * (i / len(text)))
-        g = int(127 + 127 * (0.5 + i / len(text)))
-        b = int(255 * (i / len(text)))
-        print(f"\033[38;2;{r};{g};{b}m{char}", end="")
-    print("\033[0m")
+# Attempting to use subprocess will now trigger a friendly warning
+# instead of a kernel panic.
+try:
+    import subprocess
+    print("\n[SYSTEM] Testing patched subprocess...")
+    subprocess.run(["echo", "hello world"])
+except Exception as e:
+    print(f"Caught: {e}")
 
-rainbow_text("VIBRANT TRUECOLOR RAINBOW SYSTEM ACTIVATED")
-
-# 2. Advanced ASCII Art Handling
-print("""\033[36m
-      _____       _____ _             _ _        
-     |  __ \     / ____| |           | (_)       
-     | |__) |   | (___ | |_ _   _  __| |_  ___   
-     |  ___/     \___ \| __| | | |/ _` | |/ _ \  
-     | |         ____) | |_| |_| | (_| | | (_) | 
-     |_|        |_____/ \__|\__,_|\__,_|_|\___/  
-\033[0m""")
-
-# 3. Interactive UI Bridge
-def on_click():
-    print("\033[32;1m[CALLBACK]\033[0m Button was clicked in the UI!")
-    display(pd.DataFrame({"Action": ["Success"], "Status": [200]}))
-
-print("Adding interactive widget to the stream...")
-create_button("Trigger Python Callback", on_click)
-
-# 4. Complex Data Processing
+# Interactive Data Viz
 df = pd.DataFrame({
-    'Metric': ['CPU', 'RAM', 'GPU', 'DISK'],
-    'Usage': [42, 68, 12, 89],
-    'Status': ['Optimal', 'High', 'Idle', 'Full']
+    "Feature": ["WASM", "Gemini AI", "Pandas", "PyPI"],
+    "Status": ["Ready", "Connected", "Stable", "Active"],
+    "Speed": [9.8, 8.5, 9.2, 9.9]
 })
-display(df)
-</textarea>
-                </div>
+
+display(df)</textarea>
             </div>
 
-            <!-- Right: Double-Output Panel -->
-            <div class="w-[500px] flex flex-col bg-[#050505]">
-                <!-- Rich Pane -->
-                <div class="flex-1 flex flex-col border-b border-slate-900 min-h-0">
-                    <div class="h-9 flex items-center px-4 bg-slate-950 border-b border-slate-900">
-                        <span class="text-[9px] font-black text-blue-500 uppercase tracking-[0.2em]">Rich Visualization</span>
-                    </div>
-                    <div id="rich-output" class="flex-1 overflow-y-auto p-5 rich-output terminal-scroll space-y-6">
-                        <div class="text-slate-700 text-[10px] font-medium uppercase text-center mt-10">Awaiting rich signals...</div>
-                    </div>
+            <!-- Terminal Area -->
+            <div class="h-64 border-t border-[#30363d] bg-[#0d1117] flex flex-col">
+                <div class="h-9 flex items-center px-4 bg-[#161b22] border-b border-[#30363d] space-x-6">
+                    <button class="text-[11px] font-bold text-white border-b border-[#f78166] h-full px-1">TERMINAL</button>
+                    <button class="text-[11px] font-bold text-slate-500 hover:text-slate-300 transition-colors">OUTPUT</button>
+                    <button class="text-[11px] font-bold text-slate-500 hover:text-slate-300 transition-colors">DEBUG CONSOLE</button>
                 </div>
-
-                <!-- Terminal Pane -->
-                <div class="h-[350px] flex flex-col bg-black overflow-hidden relative">
-                    <div class="h-8 flex items-center px-4 bg-slate-950/50 border-b border-white/5 justify-between">
-                        <span class="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">Advanced Console v4.0</span>
-                        <div class="flex space-x-1">
-                            <div class="w-2 h-2 rounded-full bg-red-900/50"></div>
-                            <div class="w-2 h-2 rounded-full bg-yellow-900/50"></div>
-                            <div class="w-2 h-2 rounded-full bg-green-900/50"></div>
-                        </div>
-                    </div>
-                    <div id="terminal-output" class="flex-1 overflow-y-auto p-4 fira-code text-[11px] space-y-1 terminal-scroll"></div>
-                    
-                    <div class="flex items-center px-4 py-3 bg-slate-950/80 border-t border-white/5 backdrop-blur-md">
-                        <span id="prompt-label" class="text-blue-500 font-black mr-3 fira-code text-xs">>>></span>
-                        <input id="terminal-input" type="text" class="flex-1 bg-transparent outline-none fira-code text-xs text-slate-200 placeholder:text-slate-700" placeholder="Type Python or pip commands...">
-                    </div>
+                <div id="terminal-output" class="flex-1 overflow-y-auto p-3 fira-code text-sm terminal-scroll bg-black/30"></div>
+                <div class="px-3 py-2 border-t border-[#30363d] flex items-center bg-[#0d1117]">
+                    <span class="text-blue-500 font-bold mr-2 text-xs">>>></span>
+                    <input id="terminal-input" type="text" class="flex-1 bg-transparent border-none outline-none fira-code text-xs text-slate-200" placeholder="Execute command or pip install...">
                 </div>
             </div>
-        </main>
+        </div>
+
+        <!-- Right Side: Visual Output / AI Chat -->
+        <aside class="w-80 bg-[#0d1117] border-l border-[#30363d] flex flex-col">
+            <div class="h-9 flex items-center px-4 bg-[#161b22] border-b border-[#30363d] justify-between">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Render Output</span>
+                <button id="clear-rich" class="text-[9px] font-bold text-slate-600 hover:text-slate-400">CLEAR</button>
+            </div>
+            <div id="rich-output" class="flex-1 overflow-y-auto p-4 space-y-4">
+                <div class="text-slate-700 text-[10px] text-center mt-20 italic">Visual objects will appear here...</div>
+            </div>
+        </aside>
     </div>
 
     <!-- Status Bar -->
-    <footer class="h-7 bg-slate-950 border-t border-slate-900 flex items-center px-6 justify-between">
-        <div class="flex items-center space-x-6">
-            <div class="flex items-center space-x-2">
-                <span class="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Status:</span>
-                <span id="status-text" class="text-[9px] font-bold text-blue-400 uppercase tracking-widest">Operational</span>
+    <footer class="h-6 bg-[#21262d] border-t border-[#30363d] flex items-center px-3 justify-between z-40 text-[10px] text-slate-400 font-medium">
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-1.5 px-1 hover:bg-[#30363d] cursor-pointer rounded transition-colors">
+                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2v20m10-10H2" stroke-width="2"/></svg>
+                <span id="line-col">Ln 1, Col 1</span>
             </div>
-            <div class="flex items-center space-x-2">
-                <span class="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Kernel:</span>
-                <span class="text-[9px] font-bold text-white tracking-widest">3.12 (WASM)</span>
+            <div class="flex items-center space-x-1.5 px-1 hover:bg-[#30363d] cursor-pointer rounded transition-colors">
+                <span id="status-text" class="text-blue-400">Initializing Kernel...</span>
             </div>
         </div>
         <div class="flex items-center space-x-4">
-            <span class="text-[9px] font-bold text-slate-700 tracking-tighter">HyperStudio Pro &copy; 2025</span>
+            <span class="hover:text-white cursor-pointer">UTF-8</span>
+            <span class="hover:text-white cursor-pointer flex items-center">
+                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 000 2h6a1 1 0 100-2H7z"/></svg>
+                Python 3.12
+            </span>
         </div>
     </footer>
 
